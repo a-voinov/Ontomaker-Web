@@ -1,0 +1,39 @@
+<!DOCUMENT>
+<html>
+    <meta>
+        <meta charset="UTF-8"/>
+
+        <script src="lib/vue/vue.js"></script>
+        <script src="lib/vue/vue-resource/vue-resource.js"></script>
+        <script src="lib/jquery/jquery-3.3.1.min.js"></script>
+    </head>
+        <div id="app">
+            <div id="parent">
+                <div id="toolsDiv">
+                    <div id="topButtons">
+                        <button id="convertButton"
+                                v-on:click="getOWL">
+                            {{convertButtonText}}
+                        </button>
+                        <button id="downloadOWLButton">{{downloadOWLButtonText}}</button>
+                    </div>
+                    <div id="owlDiv">
+                        <textarea  id="owlArea"
+                                   placeholder="Онтология на OWL"
+                                   v-model="owl">
+                        </textarea>
+                    </div>
+                </div>
+                <div id="clrDiv">
+                    <textarea id="keaArea"
+                               placeholder="Введите текст на КЕЯ"
+                               v-model="cnl">
+                    </textarea>
+                </div>
+            </div>
+        </div>
+
+        <script charset="utf-8" src="main.js"></script>
+        <link rel="stylesheet" href="main.css"/>
+    </body>
+</html>

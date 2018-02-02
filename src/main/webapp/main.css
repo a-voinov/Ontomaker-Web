@@ -1,0 +1,44 @@
+#parent{
+	overflow: hidden;
+}
+
+#toolsDiv{
+	float: right;
+	width: 50%;
+	height: 100%;
+}
+
+#clrDiv{
+	overflow: hidden;
+	width: 50%
+	height: 100%;
+}
+
+#keaArea {
+	width: 100%;
+	height: 100%;
+	resize: none;
+}
+
+#owlArea {
+	width: 90%;
+	height: 100%;
+	margin-left: 2vw;
+	resize: none;
+}
+
+#convertButton {
+	margin-left: 2vw;
+}
+
+#downloadOWLButton {
+	margin-left: 1vw;
+}
+
+#topButtons {
+	height: 7%;
+}
+
+#owlDiv {
+	height: 93%;
+}
