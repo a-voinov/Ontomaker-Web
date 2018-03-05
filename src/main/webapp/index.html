@@ -1,39 +1,117 @@
 <!DOCUMENT>
 <html>
+    <head>
     <meta>
         <meta charset="UTF-8"/>
 
         <script src="lib/vue/vue.js"></script>
         <script src="lib/vue/vue-resource/vue-resource.js"></script>
         <script src="lib/jquery/jquery-3.3.1.min.js"></script>
-    </head>
-        <div id="app">
-            <div id="parent">
-                <div id="toolsDiv">
-                    <div id="topButtons">
-                        <button id="convertButton"
-                                v-on:click="getOWL">
-                            {{convertButtonText}}
-                        </button>
-                        <button id="downloadOWLButton">{{downloadOWLButtonText}}</button>
-                    </div>
-                    <div id="owlDiv">
-                        <textarea  id="owlArea"
-                                   placeholder="Онтология на OWL"
-                                   v-model="owl">
-                        </textarea>
-                    </div>
-                </div>
-                <div id="clrDiv">
-                    <textarea id="keaArea"
-                               placeholder="Введите текст на КЕЯ"
-                               v-model="cnl">
-                    </textarea>
-                </div>
-            </div>
-        </div>
+        <!-- Element UI-->
+        <link rel="stylesheet" href="lib/element/index.css"/>
+        <link rel="stylesheet" href="lib/element/index.css"/>
+        <script charset="utf-8" src="lib/element/index.js"></script>
 
-        <script charset="utf-8" src="main.js"></script>
-        <link rel="stylesheet" href="main.css"/>
-    </body>
+    </head>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+        <!-- app -->
+        <div id="app"  v-cloak>
+            <!--Главное меню-->
+            <el-menu
+                    ref="menu"
+                    :default-active="activeIndex"
+                    mode="horizontal"
+                    @select="handleMenuSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    active-text-color="#ffd04b">
+                <el-menu-item  class="topMenu" index="CNL">
+                    КЕЯ
+                </el-menu-item>
+                <el-menu-item class="topMenu" index="TRIPLETS">
+                    Триплеты
+                </el-menu-item>
+                <el-menu-item class="topMenu" index="OWL">
+                    OWL
+                </el-menu-item>
+                <el-menu-item class="topMenu" index="VOWL">
+                    Граф (V-OWL)
+                </el-menu-item>
+            </el-menu>
+            <br/>
+            <!--Боковое меню-->
+            <el-menu
+                    class="sideMenu"
+                    :collapse=true>
+                <el-menu-item  index="creteNewCNL">
+                    <i style="font-size:44; left:10px" class="el-icon-document"></i>
+                    <span style="font-size:14" slot="title">Создать новую онтологию</span>
+                </el-menu-item>
+                <el-menu-item style="margin-top:10px;"  index="highlight">
+                    <i style="font-size:44" class="el-icon-circle-check"></i>
+                    <span style="font-size:14" slot="title">Подсветка синтаксиса</span>
+                </el-menu-item>
+                <el-menu-item style="margin-top:10px;"  index="download">
+                    <i style="font-size:44" class="el-icon-download"></i>
+                    <span style="font-size:14" slot="title">Скачать</span>
+                </el-menu-item>
+            </el-menu>
+            <div id="parent">
+                <!--Основной контент-->
+                <textarea  v-bind:class="{'invisible' : curTab != TAB_CNL}"
+                           id="keaArea"
+                           placeholder="Введите текст на КЕЯ"
+                           v-model="cnl"
+                           v-on:keydown="keaKeyDown" >
+                </textarea>
+                <textarea v-bind:class="{'invisible' : curTab != TAB_TRIPLETS}"
+                          readonly id="tripletsArea"
+                          v-model="triplets">
+                </textarea>
+              <!--  <div id="owlDiv">
+                    <iframe id="vowlFrame" width="100%" height="100%"> </iframe>
+                </div> -->
+            </div>
+
+            <button id="show-modal" @click="showLoadingModal = true">Show Modal</button>
+            <!--Сообшение о ошибке (незаполненная КЕЯ)-->
+            <modal v-if="showEmptyCnlModal"
+                   @close="showEmptyCnlModal = false; openCnlTab();">
+               <h3 slot="header">Ошибка{{emptyCnlMessage}}</h3>
+               <p slot="body"></p>
+               <p slot="footer">Введите текст на КЕЯ</p>
+            </modal>
+            <!--Диалог для создания OWL-->
+            <modal-owl v-cloak
+                       :iri="iri"
+                v-if="showLoadOwlModal"
+                @ok="showLoadOwlModal = false; sendCNL();"
+                @close="showLoadOwlModal = false; openCnlTab();">
+                <h3 slot="header">Создание онтологии</h3>
+                <p slot="body">Введите IRI онтологии:</p>
+                <input v-model="iri" slot="body-add"/>
+                <i slot="footer" class="el-icon-upload2"></i>
+            </modal-owl>
+            <!--Диалог загрузки-->
+            <modal-loading v-if="showLoadingModal"
+                   @close="showLoadingModal = false;">
+            </modal-loading>
+
+       </div>
+
+
+       <script charset="utf-8" src="util.js"></script>
+       <script charset="utf-8" src="keaEditor.js"></script>
+       <script charset="utf-8" src="main.js"></script>
+       <script charset="utf-8" src="modal.js"></script>
+       <script charset="utf-8" src="modal-owl.js"></script>
+       <script charset="utf-8" src="modal-loading.js"></script>
+       <link rel="stylesheet" href="main.css"/>
+       <link rel="stylesheet" href="modal.css"/>
+
+   </body>
 </html>
