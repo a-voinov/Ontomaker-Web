@@ -20,9 +20,12 @@ import java.util.Properties;
  */
 public class Ontomaker {
 
-    private final String MY_IRI = "http://onto.plus/animals.owl";
-    private String ONTOLOGY_PATH;
+    private final String IRI = "http://onto.plus/";
     private final String ONTOLOGY_SUBCLASS_RELATION = "подкласс";
+    private String filePath;
+
+    //triplets JSON
+    private String tripletsJSON;
 
     /**
      *
@@ -30,44 +33,49 @@ public class Ontomaker {
      * @return owl server file path
      * @throws Exception
      */
-    public String CreteOWL(String CNL) throws Exception {
+    public String CreateOWL(String CNL, String iri, String owlPath) throws Exception {
+
+        iri = IRI + iri + ".owl";
 
         Date date = new Date();
         DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss yyyy-MM-dd");
-        ONTOLOGY_PATH = "ontology" + dateFormat.format(date).replace(":", "-") + ".owl";
+        String ontologyName = "ontology" + dateFormat.format(date).replace(":", "-").replace(" ", "_") + ".owl";
+        filePath = owlPath + "\\" + ontologyName;
 
         Gson g = new Gson();
         //запрос на получение КЕЯ в триплетной форме от сервиса
-        String json = TripletsRetriever.GetTriplets(CNL);
+        tripletsJSON = TripletsRetriever.GetTriplets(CNL);
         //парс триплетов из JSON в объектную форму
-        TripletsWrapper tripletsWrapper = g.fromJson(json, TripletsWrapper.class);
+        TripletsWrapper tripletsWrapper = g.fromJson(tripletsJSON, TripletsWrapper.class);
 
         //создание owl документа
         TripletParser tripletParser;
         try {
-            tripletParser = new TripletParser(MY_IRI, ONTOLOGY_SUBCLASS_RELATION,
+            tripletParser = new TripletParser(iri, ONTOLOGY_SUBCLASS_RELATION,
                     tripletsWrapper);
         } catch (OWLOntologyCreationException e) {
             throw new Exception("Ошибка создания онтологии");
         }
 
         try {
-            tripletParser.ParseAndSave(ONTOLOGY_PATH);
-
+            tripletParser.ParseAndSave(filePath);
             //STU watermark
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(ONTOLOGY_PATH, true));
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath, true));
             bufferedWriter.write("<!--[Siberian Transport University] Parsed from the CNL by the CNL-Ontomaker-1.0 at " + dateFormat.format(date) + "-->");
             bufferedWriter.close();
         } catch (Exception e) {
             throw new Exception("Ошибка сохранения онтологии");
         }
 
-        return ONTOLOGY_PATH;
+        return filePath;
     }
 
     public String getOWLText() throws Exception {
-        byte[] encoded = Files.readAllBytes(Paths.get(ONTOLOGY_PATH));
+        byte[] encoded = Files.readAllBytes(Paths.get(filePath));
         return new String(encoded, "UTF-8");
     }
 
+    public String getTripletsJSON() {
+        return tripletsJSON;
+    }
 }

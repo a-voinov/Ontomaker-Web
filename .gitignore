@@ -8,8 +8,9 @@ target/
 #frontend libs
 src/main/webapp/lib/
 
-#owl files
+#owl and vowl files
 *.owl
+*.json
 
 # Compiled class file
 *.class

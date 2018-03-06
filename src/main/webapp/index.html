@@ -23,7 +23,7 @@
             <!--Главное меню-->
             <el-menu
                     ref="menu"
-                    :default-active="activeIndex"
+                    :default-active="curTab"
                     mode="horizontal"
                     @select="handleMenuSelect"
                     background-color="#545c64"
@@ -33,7 +33,7 @@
                     КЕЯ
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="TRIPLETS">
-                    Триплеты
+                    Фреймы
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="OWL">
                     OWL
@@ -70,14 +70,22 @@
                 </textarea>
                 <textarea v-bind:class="{'invisible' : curTab != TAB_TRIPLETS}"
                           readonly id="tripletsArea"
+                          placeholder="Фреймы"
                           v-model="triplets">
                 </textarea>
-              <!--  <div id="owlDiv">
+                <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
+                          readonly id="owlArea"
+                          placeholder="OWL"
+                          v-model="owl">
+                </textarea>
+                <div
+                v-bind:class="{'invisible' : curTab != TAB_VOWL}"
+                id="owlDiv">
                     <iframe id="vowlFrame" width="100%" height="100%"> </iframe>
-                </div> -->
+                </div>
             </div>
 
-            <button id="show-modal" @click="showLoadingModal = true">Show Modal</button>
+            <!--<button id="show-modal" @click="showLoadingModal = true">Show Modal</button>-->
             <!--Сообшение о ошибке (незаполненная КЕЯ)-->
             <modal v-if="showEmptyCnlModal"
                    @close="showEmptyCnlModal = false; openCnlTab();">
@@ -92,15 +100,24 @@
                 @ok="showLoadOwlModal = false; sendCNL();"
                 @close="showLoadOwlModal = false; openCnlTab();">
                 <h3 slot="header">Создание онтологии</h3>
-                <p slot="body">Введите IRI онтологии:</p>
-                <input v-model="iri" slot="body-add"/>
+                <p slot="body">Введите название онтологии:</p>
+                <input  @keyup.enter="showLoadOwlModal = false; sendCNL();"
+                        v-model="iri"
+                        slot="body-add"/>
                 <i slot="footer" class="el-icon-upload2"></i>
             </modal-owl>
             <!--Диалог загрузки-->
             <modal-loading v-if="showLoadingModal"
                    @close="showLoadingModal = false;">
+                <h3 slot="header"></h3>
             </modal-loading>
-
+            <!--Сообшение о ошибке генерации OWL-->
+            <modal v-if="showOWLErrorModal"
+                   @close="showOWLErrorModal = false; openCnlTab();">
+                <h3 slot="header">Ошибка при генерации OWL</h3>
+                <p slot="body">{{OWLErrMessage}}</p>
+                <p slot="footer"> </p>
+            </modal>
        </div>
 
 

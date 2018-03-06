@@ -9,6 +9,7 @@ import okhttp3.*;
 import okio.Buffer;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -44,7 +45,7 @@ public class TripletsRetriever {
         }
     }
     
-    public static String GetTriplets(String kea){
+    public static String GetTriplets(String kea) throws Exception{
 
         //call to service
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -64,7 +65,12 @@ public class TripletsRetriever {
             Response response = client.newCall(request).execute();
             return response.body().string();
 
-        } catch (Exception e) {
+        }
+        catch (UnknownHostException e){
+            e.printStackTrace();
+            throw new Exception("Сервис не найден, или отсутствует соединение с интернетом");
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }

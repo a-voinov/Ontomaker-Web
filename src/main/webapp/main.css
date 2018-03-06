@@ -24,6 +24,7 @@
 }
 
 #keaArea,
+#owlArea,
 #tripletsArea {
 	margin-top: 1%;
 	width: 90vw;
@@ -64,5 +65,5 @@
 }
 
 #owlDiv {
-	height: 93%;
+	height: 80%;
 }
