@@ -3,6 +3,13 @@
  * Created by Войнов А.А.
  * СГУПС ФБИ 2018
  */
+
+Vue.directive('focus',{
+	inserted: function(el){
+		el.focus()
+	}
+});
+
 var app = new Vue({
 	el: '#app',
 	//````````````````````ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПРИЛОЖЕНИЯ````````````````````````
@@ -18,6 +25,7 @@ var app = new Vue({
 		TAB_VOWL: 'VOWL',
 		//текущая открытая вкладка
 		curTab: 'CNL',
+		curMenuItem:'edit',
 		//флаги открытия модальных окон
 		showLoadingModal: false,
 		showLoadOwlModal: false,
@@ -27,18 +35,24 @@ var app = new Vue({
 		isOwlLoaded: false,
 		//OWL в процессе загрузки
 		isOwlLoading: false,
+		//граф уже загружен
+		isVowlLoaded: false,
 		//сообщение об ошибке загрузки (если текст КЕЯ не введен)
 		emptyCnlMessage: '',
 		//сообщение об ошибке генерации OWL
 		OWLErrMessage: '',
 		//сообщение о статусе загрузки
 		loadingWindowMessage: '',
+		//отображать CNLAREA
+		cnlAreaShow: false,
 		//переменные модели
 		iri: '',
 		cnl: '',
+		raw: '', //исходный текст
 		owl: '',
 		triplets: '',
-		owlURL: ''
+		owlURL: '',
+		cnl_content: ''
 	},
 	//````````````````````МЕТОДЫ ПРИЛОЖЕНИЯ````````````````````````
 	methods:{
@@ -50,7 +64,9 @@ var app = new Vue({
 			v.owl = json.OWL;
 			v.triplets = json.frameJSON;
 			v.owlURL = json.OWLServerPath;
-			this.loadVOWL();
+			if (v.curTab==v.TAB_VOWL){
+				this.loadVOWL();
+			}
 			//закрыть окно загрузки
 			v.showLoadingModal = false;
 			//обновить переменные статуса загрузки
@@ -90,12 +106,14 @@ var app = new Vue({
 		},
 		//Открытие фрейма с приложением WebVOWL
 		loadVOWL: function(){
+			if (this.$data.isVowlLoaded) return;
 			var url = "#url=" + this.$data.appLink + this.$data.owlURL;
 			var vowlLink = this.$data.vowlLink;
 			setTimeout(
 			function(){
 				$('#vowlFrame').attr('src', vowlLink + url);
 			},1000);
+			isVowlLoaded = true;
 		},
 		//Обработка выбора вкладки главного меню
 		handleMenuSelect: function(index, indexPath){
@@ -109,6 +127,9 @@ var app = new Vue({
 					this.beginSendCNL(' загрузки OWL');
 				break;
 				case v.TAB_VOWL:
+					if (v.isOwlLoaded && !v.isVowlLoaded){
+						this.loadVOWL();
+					}
 					this.beginSendCNL(' отображения VOWL');
 				break;
 			}
@@ -161,6 +182,39 @@ var app = new Vue({
 				}
 				return false;
 			}
+		},
+		//рисование КЕЯ
+		updateCnlText () {
+			var tabTag = '<i class="leftborder">&nbsp;&nbsp;</i>';
+			var tabIcon = '<i class="el-icon-caret-right leftborder"></i>';
+			var lines = this.$data.cnl.split("\n");
+			var content = "";
+			lines.forEach(function(line){
+				var newLine = "";
+				var tabCount = (line.match(/\t/g)||[]).length;
+				if (tabCount > 1){
+					for (var t=0; t < tabCount + 1; t++) { newLine+=tabTag; }
+					newLine += tabIcon;
+				} else if (tabCount == 1){
+					newLine += tabTag + tabIcon;
+				} else if (tabCount == 0){
+					newLine = tabIcon;
+				}
+				var color = "black";
+				var text = line.replace("\t", "").trim();
+				if (tabCount % 2 != 0){
+					if (text == "подкласс"){
+						color = "lightseagreen";
+					} else {
+						color = "red";
+					}
+				}
+				newLine += "<span class='triplet-unit' style='color:" + color + "'>" + text;
+				content += newLine + "</span><br/>";
+			});
+
+			this.$data.cnl_content = content;
+
 		}
 	}
 });

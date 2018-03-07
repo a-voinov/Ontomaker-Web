@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="lib/element/index.css"/>
         <link rel="stylesheet" href="lib/element/index.css"/>
         <script charset="utf-8" src="lib/element/index.js"></script>
-
+        <script charset="utf-8" src="cnl-area.js"></script>
     </head>
     <style>
         [v-cloak] {
@@ -30,7 +30,7 @@
                     text-color="#fff"
                     active-text-color="#ffd04b">
                 <el-menu-item  class="topMenu" index="CNL">
-                    КЕЯ
+                    Текст
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="TRIPLETS">
                     Фреймы
@@ -45,15 +45,27 @@
             <br/>
             <!--Боковое меню-->
             <el-menu
-                    class="sideMenu"
-                    :collapse=true>
+            v-bind:class="{'invisible' : curTab == TAB_VOWL}"
+            class="sideMenu"
+            :collapse=true
+            :default-active="curMenuItem">
                 <el-menu-item  index="creteNewCNL">
                     <i style="font-size:44; left:10px" class="el-icon-document"></i>
                     <span style="font-size:14" slot="title">Создать новую онтологию</span>
                 </el-menu-item>
-                <el-menu-item style="margin-top:10px;"  index="highlight">
-                    <i style="font-size:44" class="el-icon-circle-check"></i>
-                    <span style="font-size:14" slot="title">Подсветка синтаксиса</span>
+                <el-menu-item
+                        @click="updateCnlText(); cnlAreaShow = true;"
+                        style="margin-top:10px;"
+                        index="highlight">
+                    <i style="font-size:44" class="el-icon-search"></i>
+                    <span style="font-size:14" slot="title">Подсветка синтаксиса КЕЯ</span>
+                </el-menu-item>
+                <el-menu-item
+                        @click="cnlAreaShow = false"
+                        style="margin-top:10px;"
+                        index="edit">
+                    <i style="font-size:44" class="el-icon-edit"></i>
+                    <span style="font-size:14" slot="title">Режим редактирования КЕЯ</span>
                 </el-menu-item>
                 <el-menu-item style="margin-top:10px;"  index="download">
                     <i style="font-size:44" class="el-icon-download"></i>
@@ -62,25 +74,47 @@
             </el-menu>
             <div id="parent">
                 <!--Основной контент-->
-                <textarea  v-bind:class="{'invisible' : curTab != TAB_CNL}"
-                           id="keaArea"
-                           placeholder="Введите текст на КЕЯ"
-                           v-model="cnl"
-                           v-on:keydown="keaKeyDown" >
-                </textarea>
-                <textarea v-bind:class="{'invisible' : curTab != TAB_TRIPLETS}"
-                          readonly id="tripletsArea"
-                          placeholder="Фреймы"
-                          v-model="triplets">
-                </textarea>
-                <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
-                          readonly id="owlArea"
-                          placeholder="OWL"
-                          v-model="owl">
-                </textarea>
-                <div
-                v-bind:class="{'invisible' : curTab != TAB_VOWL}"
-                id="owlDiv">
+                <!--Левая половина-->
+                <div id="leftSide">
+                    <div id="keaAreaWrapper">
+                        <textarea  v-bind:class="{'invisible' :  cnlAreaShow  || curTab == TAB_VOWL}"
+                                   id="keaArea"
+                                   v-focus
+                                   placeholder="Введите текст на КЕЯ"
+                                   v-model="cnl"
+                                   v-on:keydown="keaKeyDown" >
+                        <!--   @blur="updateCnlText(); cnlAreaShow = true;"-->
+
+                       </textarea>
+                   </div>
+                   <!-- Красивая КЕЯ -->
+                    <cnl-area
+                            v-bind:class="{'invisible' :  !cnlAreaShow || curTab == TAB_VOWL}"
+                            id="cnlArea"
+                            :content="cnl_content">
+                         <!-- @click.native="cnlAreaShow = false; this.$refs.keaInput.focus();" -->
+                    </cnl-area>
+                </div>
+                <div id="rightSide">
+                    <!--Правая половина-->
+                    <textarea v-bind:class="{'invisible' : curTab != TAB_CNL}"
+                              id="rawArea"
+                              placeholder="Исходный текст"
+                              v-model="raw">
+                    </textarea>
+                    <textarea v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
+                              readonly id="tripletsArea"
+                              placeholder="Фреймы"
+                              v-model="triplets">
+                    </textarea>
+                    <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
+                              readonly id="owlArea"
+                              placeholder="OWL"
+                              v-model="owl">
+                    </textarea>
+                </div>
+                <div v-bind:class="{'invisible' : curTab != TAB_VOWL}"
+                     id="owlDiv">
                     <iframe id="vowlFrame" width="100%" height="100%"> </iframe>
                 </div>
             </div>
@@ -103,6 +137,7 @@
                 <p slot="body">Введите название онтологии:</p>
                 <input  @keyup.enter="showLoadOwlModal = false; sendCNL();"
                         v-model="iri"
+                        v-focus
                         slot="body-add"/>
                 <i slot="footer" class="el-icon-upload2"></i>
             </modal-owl>
@@ -120,11 +155,10 @@
             </modal>
        </div>
 
-
        <script charset="utf-8" src="util.js"></script>
-       <script charset="utf-8" src="keaEditor.js"></script>
        <script charset="utf-8" src="main.js"></script>
        <script charset="utf-8" src="modal.js"></script>
+
        <script charset="utf-8" src="modal-owl.js"></script>
        <script charset="utf-8" src="modal-loading.js"></script>
        <link rel="stylesheet" href="main.css"/>

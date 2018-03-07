@@ -1,4 +1,9 @@
-
+textarea,
+pre {
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+}
 
 #hideScreen{
 	background-color:white;
@@ -23,15 +28,20 @@
 	display: none
 }
 
+#keaArea{
+	white-space: nowrap;
+}
+
 #keaArea,
 #owlArea,
+#rawArea,
 #tripletsArea {
 	margin-top: 1%;
-	width: 90vw;
+	width: 90%;
 	height: 75%;
 	resize: none;
 	margin-left: 2vw;
-	font-size:22
+	font-size:18
 }
 
 #tripletsArea {
@@ -66,4 +76,40 @@
 
 #owlDiv {
 	height: 80%;
+}
+
+#cnlArea {
+	margin-top: 1%;
+	width: 90%;
+	height: 75%;
+	margin-left: 2vw;
+	font-size:22;
+	border:solid 1px black;
+	padding: 10px;
+	overflow: auto;
+
+}
+
+.triplet-unit {
+	font-family: monospace;
+	cursor: pointer;
+
+}
+
+.triplet-unit:hover {
+	color: orange !important
+}
+
+.leftborder {
+	border-left: 1px solid black
+}
+
+#leftSide{
+	width:50%;
+	float:left
+}
+
+#rightSide{
+	width:50%;
+	float:right
 }
