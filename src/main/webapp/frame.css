@@ -1,0 +1,35 @@
+.frame-main{
+	background-color:green;
+	width: 100%;
+	height: 100%;
+}
+
+.frame-header{
+	background-color:aqua;
+	width:100%;
+	height:10%;
+}
+
+.frame-body {
+	padding: 5px;
+}
+
+.frame-left {
+	background-color:yellow;
+	width:50%;
+	height:80%;
+	float:left;
+}
+
+.frame-right {
+	background-color: lime;
+	width:50%;
+	height: 80%;
+	float: right;
+}
+
+.frame-placeholder {
+	display: table;
+	top: 40%;
+	position: relative;
+}

@@ -25,7 +25,7 @@ pre {
 }
 
 .invisible{
-	display: none
+	display: none !important
 }
 
 #keaArea{
@@ -78,7 +78,7 @@ pre {
 	height: 80%;
 }
 
-#cnlArea {
+.cnl {
 	margin-top: 1%;
 	width: 90%;
 	height: 75%;
@@ -102,6 +102,10 @@ pre {
 
 .leftborder {
 	border-left: 1px solid black
+}
+
+.topborder {
+	border-top: 1px solid black
 }
 
 #leftSide{

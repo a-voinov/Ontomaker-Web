@@ -33,7 +33,7 @@
                     Текст
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="TRIPLETS">
-                    Фреймы
+                    Фрейм
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="OWL">
                     OWL
@@ -84,16 +84,13 @@
                                    v-model="cnl"
                                    v-on:keydown="keaKeyDown" >
                         <!--   @blur="updateCnlText(); cnlAreaShow = true;"-->
-
                        </textarea>
                    </div>
                    <!-- Красивая КЕЯ -->
-                    <cnl-area
-                            v-bind:class="{'invisible' :  !cnlAreaShow || curTab == TAB_VOWL}"
-                            id="cnlArea"
-                            :content="cnl_content">
-                         <!-- @click.native="cnlAreaShow = false; this.$refs.keaInput.focus();" -->
-                    </cnl-area>
+                    <div v-bind:class="{'invisible' : !cnlAreaShow || curTab == TAB_VOWL}"
+                            id="cnlArea">
+                        <div id="cnlPlaceholder" class="cnl"></div>
+                    </div>
                 </div>
                 <div id="rightSide">
                     <!--Правая половина-->
@@ -102,11 +99,38 @@
                               placeholder="Исходный текст"
                               v-model="raw">
                     </textarea>
-                    <textarea v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
+                    <div v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
                               readonly id="tripletsArea"
-                              placeholder="Фреймы"
-                              v-model="triplets">
-                    </textarea>
+                              placeholder="Фрейм"
+                              >
+                        <div v-bind:class="{'invisible' : showFrame || curTab != TAB_TRIPLETS}"
+                                class="frame-placeholder">
+                              <i class="el-icon-arrow-left"></i>
+                              <p style="font-family: monospace;">Выберите субъект онтологии</p>
+                        </div>
+                        <div v-bind:class="{'invisible' : !showFrame || curTab != TAB_TRIPLETS}"
+                            class="frame-main">
+                            <div class="frame-header"><p>{{subjName}}</p></div>
+                            <div class="frame-body">
+                                <div class="frame-left">
+                                    <ul>
+                                        <li v-for="item in relations"
+                                            v-bind:class="{'topborder' : item!=''}">
+                                            {{item}}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="frame-right">
+                                    <ul>
+                                        <li v-for="item in objects"
+                                            @click="showTriplets(item)">
+                                            {{item}}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
                               readonly id="owlArea"
                               placeholder="OWL"
@@ -163,6 +187,7 @@
        <script charset="utf-8" src="modal-loading.js"></script>
        <link rel="stylesheet" href="main.css"/>
        <link rel="stylesheet" href="modal.css"/>
+       <link rel="stylesheet" href="frame.css"/>
 
    </body>
 </html>

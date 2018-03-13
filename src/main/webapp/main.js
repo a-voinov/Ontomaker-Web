@@ -45,6 +45,16 @@ var app = new Vue({
 		loadingWindowMessage: '',
 		//отображать CNLAREA
 		cnlAreaShow: false,
+		//отображать фрейм
+		showFrame: false,
+		//данные триплетов
+		tripletsArray: [],
+		//название выбранного субъекта
+		subjName: '',
+		//объекты выбранного субъекта
+		objects: [],
+		//отношения выбранного субъекта
+		relations: [],
 		//переменные модели
 		iri: '',
 		cnl: '',
@@ -52,7 +62,7 @@ var app = new Vue({
 		owl: '',
 		triplets: '',
 		owlURL: '',
-		cnl_content: ''
+		cnl_content: '',
 	},
 	//````````````````````МЕТОДЫ ПРИЛОЖЕНИЯ````````````````````````
 	methods:{
@@ -63,6 +73,7 @@ var app = new Vue({
 			var json = JSON.parse(res);
 			v.owl = json.OWL;
 			v.triplets = json.frameJSON;
+			v.tripletsArray = this.parseTriplets(v.triplets);
 			v.owlURL = json.OWLServerPath;
 			if (v.curTab==v.TAB_VOWL){
 				this.loadVOWL();
@@ -209,12 +220,67 @@ var app = new Vue({
 						color = "red";
 					}
 				}
-				newLine += "<span class='triplet-unit' style='color:" + color + "'>" + text;
+				newLine += "<span class='triplet-unit' @click='showTriplets(\"" + text + "\")' style='color:" + color + "'>" + text;
 				content += newLine + "</span><br/>";
 			});
 
 			this.$data.cnl_content = content;
 
+			var v = this.$data;
+			new Vue({
+				render: Vue.compile('<div id="cnlPlaceholder" class="cnl" >' + content + '</div>').render,
+				methods: {
+					showTriplets(text) {
+						if (v.tripletsArray[text] != undefined){
+							v.showFrame = true;
+							v.objects = v.tripletsArray[text].objects;
+							v.relations = v.tripletsArray[text].relations;
+							v.subjName = text;
+						} else {
+							v.showFrame = false;
+						}
+					}
+				}
+			}).$mount('#cnlPlaceholder');
+
+		},
+		showTriplets(text){
+			var v = this.$data;
+			if (v.tripletsArray[text] != undefined){
+				v.showFrame = true;
+				v.objects = v.tripletsArray[text].objects;
+				v.relations = v.tripletsArray[text].relations;
+				v.subjName = text;
+			} else {
+				v.showFrame = false;
+			}
+		},
+		parseTriplets(triplets){
+			var json = JSON.parse(triplets);
+			var usedT = [];
+			var res = {};
+			json.triplets.forEach(function(t){
+				var s = t.subjectorigin;
+				if (usedT.includes(s)) return;
+
+				usedT.push(s);
+				var f = json.triplets.filter(x => x.subjectorigin === s);
+
+				var relations = f.map(x => x.relationorigin);
+				//remove duplicates
+				var oldR = '';
+				var rC = 0;
+				relations.forEach(function(r){
+					if (oldR === r) relations[rC] = '';
+					oldR = r;
+					rC++;
+				});
+
+				var objects = f.map(x => x.objectorigin);
+
+				res[s] = {"relations":relations, "objects":objects};
+			});
+			return res;
 		}
 	}
 });
