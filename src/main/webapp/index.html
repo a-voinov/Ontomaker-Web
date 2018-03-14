@@ -110,23 +110,28 @@
                         </div>
                         <div v-bind:class="{'invisible' : !showFrame || curTab != TAB_TRIPLETS}"
                             class="frame-main">
-                            <div class="frame-header"><p>{{subjName}}</p></div>
+                            <div class="frame-header">
+                                <button id="backButton"
+                                        @click="showPrevFrame()"
+                                        v-bind:class="{'invisible' : textHistory.length <= 1 || curTab != TAB_TRIPLETS}">
+                                    <i class="el-icon-back" style="/* float: left; */margin-left:;"></i>
+                                </button>
+                                <p>{{subjName}}</p>
+                            </div>
                             <div class="frame-body">
                                 <div class="frame-left">
-                                    <ul>
-                                        <li v-for="item in relations"
+                                        <p v-for="item in relations"
+                                            style="padding-bottom: 2px;"
                                             v-bind:class="{'topborder' : item!=''}">
                                             {{item}}
-                                        </li>
-                                    </ul>
+                                        </p>
                                 </div>
                                 <div class="frame-right">
-                                    <ul>
-                                        <li v-for="item in objects"
-                                            @click="showTriplets(item)">
+                                        <p v-for="item in objects"
+                                            class="object-link"
+                                            @click="addToTextHistory(item); showTriplets(item);">
                                             {{item}}
-                                        </li>
-                                    </ul>
+                                        </p>
                                 </div>
                             </div>
                         </div>

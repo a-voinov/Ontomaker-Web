@@ -55,6 +55,8 @@ var app = new Vue({
 		objects: [],
 		//отношения выбранного субъекта
 		relations: [],
+		//история текта
+		textHistory: [],
 		//переменные модели
 		iri: '',
 		cnl: '',
@@ -220,40 +222,48 @@ var app = new Vue({
 						color = "red";
 					}
 				}
-				newLine += "<span class='triplet-unit' @click='showTriplets(\"" + text + "\")' style='color:" + color + "'>" + text;
+				newLine += "<span class='triplet-unit' @click='addToTextHistory(\"" + text + "\"); showTriplets(\"" + text + "\")' style='color:" + color + "'>" + text;
 				content += newLine + "</span><br/>";
 			});
 
 			this.$data.cnl_content = content;
 
-			var v = this.$data;
+			var v = this;
 			new Vue({
 				render: Vue.compile('<div id="cnlPlaceholder" class="cnl" >' + content + '</div>').render,
 				methods: {
 					showTriplets(text) {
-						if (v.tripletsArray[text] != undefined){
-							v.showFrame = true;
-							v.objects = v.tripletsArray[text].objects;
-							v.relations = v.tripletsArray[text].relations;
-							v.subjName = text;
-						} else {
-							v.showFrame = false;
-						}
+						v.showTriplets(text);
+					},
+					addToTextHistory(text){
+						v.addToTextHistory(text);
 					}
 				}
 			}).$mount('#cnlPlaceholder');
 
 		},
+		addToTextHistory(text){
+			var h = this.$data.textHistory;
+			if (h[h.length - 1] != text)
+				h.push(text);
+		},
 		showTriplets(text){
 			var v = this.$data;
+			v.showFrame = true;
+			v.subjName = text;
 			if (v.tripletsArray[text] != undefined){
-				v.showFrame = true;
 				v.objects = v.tripletsArray[text].objects;
 				v.relations = v.tripletsArray[text].relations;
-				v.subjName = text;
 			} else {
-				v.showFrame = false;
+				v.objects = [];
+				v.relations = [];
 			}
+		},
+		showPrevFrame(){
+			var h = this.$data.textHistory;
+			h.pop();
+			text = h[h.length - 1];
+			this.showTriplets(text);
 		},
 		parseTriplets(triplets){
 			var json = JSON.parse(triplets);

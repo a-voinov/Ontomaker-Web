@@ -81,7 +81,7 @@ pre {
 .cnl {
 	margin-top: 1%;
 	width: 90%;
-	height: 75%;
+	height: 71%;
 	margin-left: 2vw;
 	font-size:22;
 	border:solid 1px black;
@@ -105,7 +105,8 @@ pre {
 }
 
 .topborder {
-	border-top: 1px solid black
+	border-top: 1px solid black;
+	width: 210%;
 }
 
 #leftSide{
