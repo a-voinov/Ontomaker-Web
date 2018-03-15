@@ -14,10 +14,11 @@ var app = new Vue({
 	el: '#app',
 	//````````````````````ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПРИЛОЖЕНИЯ````````````````````````
 	data: {
-		//константы
+		//ссылки
 		serviceLink: '/Owl',
 		vowlLink: 'http://localhost:8080/webvowl_1.0.6/',
 		appLink: 'http://localhost:8888/',
+		normalizeLink: 'https://rucnlparser.herokuapp.com/normtable/',
 		//индексы вкладок
 		TAB_CNL: 'CNL',
 		TAB_TRIPLETS: 'TRIPLETS',
@@ -43,12 +44,18 @@ var app = new Vue({
 		OWLErrMessage: '',
 		//сообщение о статусе загрузки
 		loadingWindowMessage: '',
-		//отображать CNLAREA
+		//отображение CNLAREA
 		cnlAreaShow: false,
-		//отображать фрейм
+		//отображение фрейма
 		showFrame: false,
 		//данные триплетов
 		tripletsArray: [],
+		//отображение визуализации исходного текста
+		colorizedAreaShow: false,
+		//данные нормализованного текста
+		normalData: {},
+		//карта нормализованый объект(субъект)-цвет
+		normalObjectColorMap: {},
 		//название выбранного субъекта
 		subjName: '',
 		//объекты выбранного субъекта
@@ -61,6 +68,7 @@ var app = new Vue({
 		iri: '',
 		cnl: '',
 		raw: '', //исходный текст
+		colorizedRaw: '', //исходный текст с html разметкой
 		owl: '',
 		triplets: '',
 		owlURL: '',
@@ -85,6 +93,8 @@ var app = new Vue({
 			//обновить переменные статуса загрузки
 			v.isOwlLoading = false;
 			v.isOwlLoaded = true;
+			//раскрасить исходный текcт
+			this.highlight();
 		},
 		//Обработка НЕуспешного завершения запроса получения OWL
 		getOWLErrorHandle: function(res){
@@ -169,7 +179,6 @@ var app = new Vue({
 			v.loadingWindowMessage = "Генерация OWL...";
 			this.getOWL();
 			console.log("sending cnl...");
-
 		},
 		//Проверка заполненности КЕЯ
 		checkEmptyCnl: function(){
@@ -196,6 +205,60 @@ var app = new Vue({
 				return false;
 			}
 		},
+		highlight(){
+			var v = this.$data;
+			this.updateCnlText();
+			v.cnlAreaShow = true;
+			this.colorizeText();
+			v.colorizedAreaShow = true;
+		},
+		getNormalText(){
+			var v = this.$data;
+			var that = this;
+			$.ajax({
+			  type: "Post",
+			  url: v.normalizeLink,
+			  data: {
+				text: v.raw
+			  },
+			  success: function(res){
+				var json = JSON.parse(res);
+				console.log('normalized data received');
+				that.parseNormalText(json);
+			  },
+			  dataType: 'text'
+			});
+		},
+		parseNormalText(json){
+			var normalArr = json.normaltext;
+			var v = this.$data;
+            var text = v.raw;
+            var res = "";
+            var c = 0;
+            normalArr.forEach(function(item){
+            	if (v.normalObjectColorMap.hasOwnProperty(item.normalword)){
+            		var index = text.indexOf(item.word);
+            		res += text.substring(0, index);
+            		var newWord = '<span style="color:' + v.normalObjectColorMap[item.normalword] + '">' + item.word + '</span>';
+            		res += newWord;
+            		text = text.substring(index + item.word.length, text.length);
+				}
+            });
+            res += text;
+			res = res.replace(/\n/g, "<br/>");
+			v.colorizedRaw = res;
+		},
+		colorizeText(){
+			var v = this.$data;
+			var text = v.raw;
+			text = text.replace(/\n/g, "<br/>");
+			if (!v.isOwlLoaded){
+				v.colorizedRaw = text;
+			} else {
+				v.colorizedRaw = '<i style="font-size:48px" class="el-icon-loading"></i>';
+				this.getNormalText();
+			}
+		},
 		//рисование КЕЯ
 		updateCnlText () {
 			var tabTag = '<i class="leftborder">&nbsp;&nbsp;</i>';
@@ -208,15 +271,15 @@ var app = new Vue({
 				if (tabCount > 1){
 					for (var t=0; t < tabCount + 1; t++) { newLine+=tabTag; }
 					newLine += tabIcon;
-				} else if (tabCount == 1){
+				} else if (tabCount === 1){
 					newLine += tabTag + tabIcon;
-				} else if (tabCount == 0){
+				} else if (tabCount === 0){
 					newLine = tabIcon;
 				}
 				var color = "black";
 				var text = line.replace("\t", "").trim();
 				if (tabCount % 2 != 0){
-					if (text == "подкласс"){
+					if (text === "подкласс"){
 						color = "lightseagreen";
 					} else {
 						color = "red";
@@ -249,6 +312,9 @@ var app = new Vue({
 		},
 		showTriplets(text){
 			var v = this.$data;
+			if (!v.isOwlLoaded){
+				return;
+			}
 			v.showFrame = true;
 			v.subjName = text;
 			if (v.tripletsArray[text] != undefined){
@@ -267,15 +333,19 @@ var app = new Vue({
 		},
 		parseTriplets(triplets){
 			var json = JSON.parse(triplets);
+			console.log(json);
 			var usedT = [];
 			var res = {};
+			var color = 'green';
+			var that = this;
 			json.triplets.forEach(function(t){
 				var s = t.subjectorigin;
 				if (usedT.includes(s)) return;
-
+				//присвоеение цвета субъекту
+				that.addObjectColor(t.subject, color);
 				usedT.push(s);
 				var f = json.triplets.filter(x => x.subjectorigin === s);
-
+				//запись предикатов субъекта в отдельный массив
 				var relations = f.map(x => x.relationorigin);
 				//remove duplicates
 				var oldR = '';
@@ -285,12 +355,23 @@ var app = new Vue({
 					oldR = r;
 					rC++;
 				});
-
+			 	//запись объектов субъекта в отдельный массив
 				var objects = f.map(x => x.objectorigin);
+				//присвоение цвета каждому объекту (нормализованной форме объекта)
+				var normalObjects = f.map(x => x.object);
+				normalObjects.forEach(function(o){
+					that.addObjectColor(o, color);
+				});
 
 				res[s] = {"relations":relations, "objects":objects};
 			});
 			return res;
+		},
+		addObjectColor(obj, color){
+			var v = this.$data;
+			if (!v.normalObjectColorMap.hasOwnProperty(obj)){
+				v.normalObjectColorMap[obj] = color;
+			}
 		}
 	}
 });

@@ -49,19 +49,19 @@
             class="sideMenu"
             :collapse=true
             :default-active="curMenuItem">
-                <el-menu-item  index="creteNewCNL">
+                <el-menu-item  index="createNewCNL">
                     <i style="font-size:44; left:10px" class="el-icon-document"></i>
                     <span style="font-size:14" slot="title">Создать новую онтологию</span>
                 </el-menu-item>
                 <el-menu-item
-                        @click="updateCnlText(); cnlAreaShow = true;"
+                        @click="highlight()"
                         style="margin-top:10px;"
                         index="highlight">
                     <i style="font-size:44" class="el-icon-search"></i>
                     <span style="font-size:14" slot="title">Подсветка синтаксиса КЕЯ</span>
                 </el-menu-item>
                 <el-menu-item
-                        @click="cnlAreaShow = false"
+                        @click="cnlAreaShow = false; colorizedAreaShow = false;"
                         style="margin-top:10px;"
                         index="edit">
                     <i style="font-size:44" class="el-icon-edit"></i>
@@ -86,7 +86,7 @@
                         <!--   @blur="updateCnlText(); cnlAreaShow = true;"-->
                        </textarea>
                    </div>
-                   <!-- Красивая КЕЯ -->
+                   <!-- Визуализация КЕЯ -->
                     <div v-bind:class="{'invisible' : !cnlAreaShow || curTab == TAB_VOWL}"
                             id="cnlArea">
                         <div id="cnlPlaceholder" class="cnl"></div>
@@ -94,11 +94,19 @@
                 </div>
                 <div id="rightSide">
                     <!--Правая половина-->
-                    <textarea v-bind:class="{'invisible' : curTab != TAB_CNL}"
+                    <!-- Исходный текст для онтологии-->
+                    <textarea v-bind:class="{'invisible' : colorizedAreaShow || curTab != TAB_CNL}"
                               id="rawArea"
                               placeholder="Исходный текст"
                               v-model="raw">
                     </textarea>
+                    <!--Размеченный из КЕЯ тект-->
+                    <div v-bind:class="{'invisible' : !colorizedAreaShow || curTab != TAB_CNL}"
+                         id="colorizedTextArea">
+                        <div id="colorizedPlaceholder" class="colorized-text"
+                             v-html="colorizedRaw"></div>
+                    </div>
+                    <!-- Фрейм -->
                     <div v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
                               readonly id="tripletsArea"
                               placeholder="Фрейм"

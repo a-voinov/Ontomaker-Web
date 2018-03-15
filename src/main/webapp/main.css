@@ -78,7 +78,9 @@ pre {
 	height: 80%;
 }
 
-.cnl {
+.cnl,
+.colorized-text
+ {
 	margin-top: 1%;
 	width: 90%;
 	height: 71%;
@@ -87,13 +89,11 @@ pre {
 	border:solid 1px black;
 	padding: 10px;
 	overflow: auto;
-
 }
 
 .triplet-unit {
 	font-family: monospace;
 	cursor: pointer;
-
 }
 
 .triplet-unit:hover {
