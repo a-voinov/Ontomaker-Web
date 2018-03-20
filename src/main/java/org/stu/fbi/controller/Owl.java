@@ -31,11 +31,11 @@ public class Owl extends HttpServlet {
         Ontomaker ontomaker = new Ontomaker();
         VOWLMaker vowlMaker = new VOWLMaker();
         try {
-            String owlSavePath = getServletContext().getRealPath("data\\owl\\");
+            String owlSavePath = getServletContext().getRealPath("\\data\\owl\\");
+            String vowlJarPath = getServletContext().getRealPath(OWL2VOWL_PATH);
             String owlFilePath = ontomaker.CreateOWL(cnl, iri, owlSavePath);
             //конвертация из owl в vowl
-            String vowlJarPath = getServletContext().getRealPath(OWL2VOWL_PATH);
-            String jsonPath = getServletContext().getRealPath("data\\vowl\\" + owlFilePath
+            String jsonPath = getServletContext().getRealPath("\\data\\vowl\\" + owlFilePath
                     .substring(owlFilePath.indexOf("\\owl\\"))
                     .replace(".owl", ".json")
                     .replace("\\owl\\","")
