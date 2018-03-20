@@ -18,7 +18,7 @@ import java.io.IOException;
 @WebServlet(name = "Owl", urlPatterns = "/Owl")
 public class Owl extends HttpServlet {
 
-    private final String OWL2VOWL_PATH = "/WEB-INF/lib/owl2vowl.jar";
+    private final String OWL2VOWL_PATH = "/WEB-INF/lib/owl2vowl-1.0.jar";
 
     @Override
     protected void doPost(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws ServletException, IOException {
