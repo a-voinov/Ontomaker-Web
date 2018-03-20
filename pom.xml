@@ -11,14 +11,14 @@
 
   <repositories>
     <repository>
-      <id>clojars</id>
-      <name>Clojars repository</name>
-      <url>https://clojars.org/repo</url>
-    </repository>
-    <repository>
       <id>project.local</id>
       <name>project</name>
       <url>file:${project.basedir}/repo</url>
+    </repository>
+    <repository>
+      <id>clojars</id>
+      <name>Clojars repository</name>
+      <url>https://clojars.org/repo</url>
     </repository>
   </repositories>
 
