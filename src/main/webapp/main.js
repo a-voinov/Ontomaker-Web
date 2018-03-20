@@ -73,6 +73,19 @@ var app = new Vue({
 		triplets: '',
 		owlURL: '',
 		cnl_content: '',
+		//переменные расцветки КЕЯ
+        baseColors: [ // базовые цвета (RGB)
+            [45, 152, 45], //зеленый
+            [75, 250, 234], //голубой
+            [243, 255, 62], //желтый
+            [70, 153, 255] //фиолетовый
+        ],
+        colorIndex: 0, //индекс базового цвета
+        minColorIndex: 0,
+        maxColorIndex: 3,
+        shadeStep: 0, // переменная генерации оттенка
+        minShadeStep: 1,
+        maxShadeStep: 4
 	},
 	//````````````````````МЕТОДЫ ПРИЛОЖЕНИЯ````````````````````````
 	methods:{
@@ -107,7 +120,7 @@ var app = new Vue({
 			v.OWLErrMessage = res.replace("ERROR:", "");
 			v.showOWLErrorModal = true;
         },
-		//Ассинхронный запрос получения OWL на сервер
+		//Ассинхронный запрос получения OWL
 		getOWL: function(){
 			$.ajax({
               type: "Post",
@@ -184,10 +197,14 @@ var app = new Vue({
 		checkEmptyCnl: function(){
 			return $('#keaArea').val() == '' ? true : false;
 		},
-		//Открытие первой вкладки меню с КЕЯ
+		//Открытие первой вкладки с текстом
 		openCnlTab: function(){
 			app.$refs.menu.items.CNL.handleClick();
 		},
+		//открытие второй вкладки с фреймом
+        openFrameTab: function(){
+            app.$refs.menu.items.TRIPLETS.handleClick();
+        },
 		//Обработка вводимого текста в окне редактора КЕЯ
 		keaKeyDown:function(e){
 			//поддержка табуляции
@@ -229,24 +246,97 @@ var app = new Vue({
 			  dataType: 'text'
 			});
 		},
+        //обработка нормализованного текста, поиск объектов и их подсвечивание
 		parseNormalText(json){
 			var normalArr = json.normaltext;
 			var v = this.$data;
             var text = v.raw;
             var res = "";
-            var c = 0;
-            normalArr.forEach(function(item){
-            	if (v.normalObjectColorMap.hasOwnProperty(item.normalword)){
-            		var index = text.indexOf(item.word);
-            		res += text.substring(0, index);
-            		var newWord = '<span style="color:' + v.normalObjectColorMap[item.normalword] + '">' + item.word + '</span>';
-            		res += newWord;
-            		text = text.substring(index + item.word.length, text.length);
-				}
+            var i = 0;
+            var j = 0;
+            var k = 0;
+            var skipWords = 0;
+            //Обработка массива с КЕЯ, очистка текста от нижних подчеркиваний между словами, дополнение объекта КЕЯ массивом слов словосочетания.
+            var words = [];
+            $.each(v.normalObjectColorMap, function(index, value){
+                var collocation = index;
+                var wordsArr = collocation.split('_');
+                words.push(wordsArr);
             });
+            //Сортировка объектов КЕЯ по количеству слов по убыванию
+            words.sort(function(a, b){
+                return b.length - a.length;
+            });
+            //Цикл по тексту
+            normalArr.forEach(function(norm){
+                //пропуск слов
+                if (skipWords > 0) { skipWords--; i++; return; }
+                 //Цикл по отсортированному массиву с КЕЯ
+                 j = 0;
+                 try{
+                 words.forEach(function(cnlArr){
+                    //Проверка первого слова КЕЯ на соответствие первому слову текста
+                    if (cnlArr[0] === norm.normalword){
+                        var success = true;
+                        var notNormalColloc = norm.word; // ненормализованное сочетание слов
+                        var normalColloc = norm.normalword; //нормализованное сочетание слов
+                        //Цикл по словосочетанию КЕЯ
+                        if (cnlArr.length > 1)
+                        for (k = 1; k <= cnlArr.length - 1; k++){
+                            //  ПРОВЕРКА НА выход за пределы массива слов
+                            if (i + k >= normalArr.length) {
+                                success = false;
+                                break;
+                            }
+                            // Получение следующего слова из текста
+                            var nextWord = normalArr[i + k];
+                            //Сравнение слова из текста и следующего слова из КЕЯ
+                            if (nextWord.normalword !== cnlArr[k]){
+                                success = false;
+                                break;
+                            }
+                            notNormalColloc += " " + nextWord.word;
+                            normalColloc += "_" + nextWord.normalword;
+                        }
+                        if (success){
+                            //цикл k завершен УСПЕШНО (все слова в КЕЯ совпали со словосочетанием из текста)
+                            //подсвечиваем словосочетание с НЕнормализованым текстом
+                            var index = text.indexOf(notNormalColloc);
+                            res += text.substring(0, index);
+                            var newWord = "<span class='cnl-token triplet-unit' @click='addToTextHistory(\"" + notNormalColloc + "\"); showTriplets(\"" + notNormalColloc + "\"); openFrameTab' style='background-color:" + v.normalObjectColorMap[normalColloc].bg + "; color: " + v.normalObjectColorMap[normalColloc].color + "'>" + notNormalColloc + "</span>";
+                            res += newWord;
+                            text = text.substring(index + notNormalColloc.length, text.length);
+                            // Сохраняем количество пропусков цикла
+                            skipWords = cnlArr.length - 1;
+                            throw "OK";
+                        }
+                    }
+                    j++;
+                 });
+                 } catch (e){}
+                 i++;
+            });
+            //````````````````````````````
             res += text;
 			res = res.replace(/\n/g, "<br/>");
 			v.colorizedRaw = res;
+
+            var vue = this;
+			//рендеринг события click
+            new Vue({
+                render: Vue.compile('<div id="colorizedPlaceholder" class="colorized-text" >' + res + '</div>').render,
+                methods: {
+                    showTriplets(t) {
+                        vue.showTriplets(t);
+                    },
+                    addToTextHistory(t){
+                        vue.addToTextHistory(t);
+                    },
+                    openFrameTab(){
+                        vue.openFrameTab();
+                    }
+                }
+            }).$mount('#colorizedPlaceholder');
 		},
 		colorizeText(){
 			var v = this.$data;
@@ -292,6 +382,7 @@ var app = new Vue({
 			this.$data.cnl_content = content;
 
 			var v = this;
+			//рендеринг события click
 			new Vue({
 				render: Vue.compile('<div id="cnlPlaceholder" class="cnl" >' + content + '</div>').render,
 				methods: {
@@ -370,8 +461,34 @@ var app = new Vue({
 		addObjectColor(obj, color){
 			var v = this.$data;
 			if (!v.normalObjectColorMap.hasOwnProperty(obj)){
-				v.normalObjectColorMap[obj] = color;
+			    var shade = this.generateShade();
+				v.normalObjectColorMap[obj] = {color: shade.color, bg: shade.bg};
 			}
+		},
+		generateShade(){
+            var v = this.$data;
+            var r = v.baseColors[v.colorIndex][0];
+            var g = v.baseColors[v.colorIndex][1];
+            var b = v.baseColors[v.colorIndex][2];
+            var max = Math.max(r,Math.max(g,b));
+            var step = 255 / (max * 3);
+            v.shadeStep += 1;
+            if (v.shadeStep > v.maxShadeStep) {
+                v.shadeStep = v.minShadeStep;
+                v.colorIndex++;
+                if (v.colorIndex > v.maxColorIndex){
+                    v.colorIndex = v.minColorIndex;
+                }
+            }
+            var newR = r * step * v.shadeStep + 10;
+            var newG = g * step * v.shadeStep - 10;
+            var newB = b * step * v.shadeStep + 15;
+            var sum = newR + newG + newB;
+            var textColor = 'white'
+            if (sum >= 300) {textColor = 'black'};
+            if (newB > 170 && newR < 110 && newG <= 160) {textColor = 'white'};
+            if (newB > 50 && newR < 180 && newG <= 160) {textColor = 'white'};
+            return {color: textColor, bg:"rgba(" + Math.ceil(newR) + ',' + Math.ceil(newG) + ',' + Math.ceil(newB) + ', 1)'};
 		}
 	}
 });

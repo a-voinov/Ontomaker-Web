@@ -97,7 +97,8 @@ pre {
 }
 
 .triplet-unit:hover {
-	color: orange !important
+	background-color: #d818af !important;
+	color: white !important
 }
 
 .leftborder {
@@ -117,4 +118,16 @@ pre {
 #rightSide{
 	width:50%;
 	float:right
+}
+
+.cnl-token {
+    height: 26px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin: 2px;
 }
