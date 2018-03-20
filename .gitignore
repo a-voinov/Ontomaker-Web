@@ -6,7 +6,7 @@
 target/
 
 #frontend libs
-src/main/webapp/lib/
+#src/main/webapp/lib/
 
 #owl and vowl files
 *.owl
