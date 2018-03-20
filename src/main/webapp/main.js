@@ -16,8 +16,8 @@ var app = new Vue({
 	data: {
 		//ссылки
 		serviceLink: '/Owl',
-		vowlLink: 'http://localhost:8080/webvowl_1.0.6/',
-		appLink: 'http://localhost:8888/',
+		vowlLink: 'http://www.visualdataweb.de/webvowl/',
+		appLink: 'https://ontomaker.herokuapp.com/',
 		normalizeLink: 'https://rucnlparser.herokuapp.com/normtable/',
 		//индексы вкладок
 		TAB_CNL: 'CNL',
