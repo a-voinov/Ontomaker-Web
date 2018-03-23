@@ -54,7 +54,13 @@ pre {
 
 .sideMenu{
 	float:left;
-	top:6vh;
+	top:14vh;
+}
+
+.statSpan {
+    font-size:24;
+    color: red;
+    font-family: monospace;
 }
 
 #keaButton{
@@ -130,4 +136,14 @@ pre {
     padding: 1px 5px;
     border-radius: 3px;
     margin: 2px;
+}
+
+.gray-cnl {
+    background-color: rgb(149, 160, 160) !important;
+    color: white !important;
+}
+
+.btn-bot-panel{
+    text-align: center;
+    padding-top: 5px;
 }

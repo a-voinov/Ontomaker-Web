@@ -5,10 +5,8 @@
         <meta charset="UTF-8"/>
 
         <script src="lib/vue/vue.js"></script>
-        <script src="lib/vue/vue-resource/vue-resource.js"></script>
         <script src="lib/jquery/jquery-3.3.1.min.js"></script>
         <!-- Element UI-->
-        <link rel="stylesheet" href="lib/element/index.css"/>
         <link rel="stylesheet" href="lib/element/index.css"/>
         <script charset="utf-8" src="lib/element/index.js"></script>
         <script charset="utf-8" src="cnl-area.js"></script>
@@ -34,6 +32,9 @@
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="TRIPLETS">
                     Фрейм
+                </el-menu-item>
+                <el-menu-item class="topMenu" index="STATS">
+                    Анализ
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="OWL">
                     OWL
@@ -67,10 +68,10 @@
                     <i style="font-size:44" class="el-icon-edit"></i>
                     <span style="font-size:14" slot="title">Режим редактирования КЕЯ</span>
                 </el-menu-item>
-                <el-menu-item style="margin-top:10px;"  index="download">
-                    <i style="font-size:44" class="el-icon-download"></i>
-                    <span style="font-size:14" slot="title">Скачать</span>
-                </el-menu-item>
+                <!-- <el-menu-item style="margin-top:10px;"  index="download">
+                     <i style="font-size:44" class="el-icon-download"></i>
+                     <span style="font-size:14" slot="title">Скачать</span>
+                 </el-menu-item>-->
             </el-menu>
             <div id="parent">
                 <!--Основной контент-->
@@ -104,6 +105,10 @@
                     <div v-bind:class="{'invisible' : !colorizedAreaShow || curTab != TAB_CNL}"
                          id="colorizedTextArea">
                         <div id="colorizedPlaceholder" class="colorized-text"></div>
+                        <div class="btn-bot-panel">
+                            <el-button @click="selectAllCNL()" type="primary" icon="el-icon-success">Выделить все</el-button>
+                            <el-button @click="deselectAllCNL()" type="primary" icon="el-icon-error">Очистить все</el-button>
+                        </div>
                     </div>
                     <!-- Фрейм -->
                     <div v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
@@ -143,6 +148,16 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Анализ статистики -->
+                    <div v-bind:class="{'invisible' : curTab != TAB_STATS }"
+                         readonly id="satsArea"
+                    >
+                        <p>Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
+                        <p>Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
+                        <p>Встречаемость объекта КЕЯ в тексте: <span class="statSpan">{{CNLMeet}}</span></p>
+                        <p>Частота объекта: <span class="statSpan">{{CNLimportance}}</span></p>
+                    </div>
+                    <!-- OWL -->
                     <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
                               readonly id="owlArea"
                               placeholder="OWL"
@@ -155,7 +170,6 @@
                 </div>
             </div>
 
-            <!--<button id="show-modal" @click="showLoadingModal = true">Show Modal</button>-->
             <!--Сообшение о ошибке (незаполненная КЕЯ)-->
             <modal v-if="showEmptyCnlModal"
                    @close="showEmptyCnlModal = false; openCnlTab();">
@@ -191,7 +205,7 @@
             </modal>
        </div>
 
-       <script charset="utf-8" src="util.js"></script>
+    <script charset="utf-8" src="util.js"></script>
        <script charset="utf-8" src="main.js"></script>
        <script charset="utf-8" src="modal.js"></script>
 
@@ -200,6 +214,7 @@
        <link rel="stylesheet" href="main.css"/>
        <link rel="stylesheet" href="modal.css"/>
        <link rel="stylesheet" href="frame.css"/>
+       <link rel="stylesheet" href="scrollbar.css"/>
 
    </body>
 </html>

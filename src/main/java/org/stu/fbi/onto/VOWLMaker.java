@@ -13,7 +13,9 @@ public class VOWLMaker {
      * @return path to json
      */
     public String RunParser(String jarPath, String owlPath, String jsonPath) throws IOException, InterruptedException {
-         ProcessBuilder pb = new ProcessBuilder(
+        System.out.println( "owl path:" +  owlPath);
+        System.out.println( "vowl path:" +  jsonPath);
+        ProcessBuilder pb = new ProcessBuilder(
                  "java",
                  "-jar",
                  jarPath,

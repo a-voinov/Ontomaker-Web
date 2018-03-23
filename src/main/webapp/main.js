@@ -16,12 +16,13 @@ var app = new Vue({
 	data: {
 		//ссылки
 		serviceLink: '/Owl',
-		vowlLink: 'http://www.visualdataweb.de/webvowl/',
-		appLink: 'https://ontomaker.herokuapp.com/',
+		vowlLink: 'http://localhost:8070/webvowl_1.0.6/',
+		appLink: 'http://localhost:8888/',
 		normalizeLink: 'https://rucnlparser.herokuapp.com/normtable/',
 		//индексы вкладок
 		TAB_CNL: 'CNL',
 		TAB_TRIPLETS: 'TRIPLETS',
+		TAB_STATS: 'STATS',
 		TAB_OWL: 'OWL',
 		TAB_VOWL: 'VOWL',
 		//текущая открытая вкладка
@@ -52,7 +53,7 @@ var app = new Vue({
 		tripletsArray: [],
 		//отображение визуализации исходного текста
 		colorizedAreaShow: false,
-		//данные нормализованного текста
+		//данные нормализованной КЕЯ
 		normalData: {},
 		//карта нормализованый объект(субъект)-цвет
 		normalObjectColorMap: {},
@@ -64,6 +65,16 @@ var app = new Vue({
 		relations: [],
 		//история текта
 		textHistory: [],
+		//выделенные триплеты
+		selectedCNL: [],
+		//данные статистики КЕЯ
+		CNLStats: {},
+		CNLCount: 0,
+		wordsCount:0,
+		CNLMeet: 0,
+		CNLimportance: 0,
+		CNLSelectedOrigin:'',
+		CNLSelectedNorm:'',
 		//переменные модели
 		iri: '',
 		cnl: '',
@@ -162,6 +173,9 @@ var app = new Vue({
 				case v.TAB_OWL:
 					this.beginSendCNL(' загрузки OWL');
 				break;
+                case v.TAB_STATS:
+                    this.beginSendCNL(' анализа статистики');
+                break;
 				case v.TAB_VOWL:
 					if (v.isOwlLoaded && !v.isVowlLoaded){
 						this.loadVOWL();
@@ -249,6 +263,7 @@ var app = new Vue({
         //обработка нормализованного текста, поиск объектов и их подсвечивание
 		parseNormalText(json){
 			var normalArr = json.normaltext;
+			var vue = this;
 			var v = this.$data;
             var text = v.raw;
             var res = "";
@@ -268,6 +283,7 @@ var app = new Vue({
                 return b.length - a.length;
             });
             //Цикл по тексту
+            v.wordsCount = normalArr.length;
             normalArr.forEach(function(norm){
                 //пропуск слов
                 if (skipWords > 0) { skipWords--; i++; return; }
@@ -303,11 +319,15 @@ var app = new Vue({
                             //подсвечиваем словосочетание с НЕнормализованым текстом
                             var index = text.indexOf(notNormalColloc);
                             res += text.substring(0, index);
-                            var newWord = "<span class='cnl-token triplet-unit' @click='addToTextHistory(\"" + notNormalColloc + "\"); showTriplets(\"" + notNormalColloc + "\"); openFrameTab' style='background-color:" + v.normalObjectColorMap[normalColloc].bg + "; color: " + v.normalObjectColorMap[normalColloc].color + "'>" + notNormalColloc + "</span>";
+                            var vbind = 'v-bind:class="{\'gray-cnl\' :  !getSelectedCNL().includes(\'' + normalColloc + '\')}"';
+                            var newWord = "<span " + vbind + " class='cnl-token triplet-unit' @click='addToTextHistory(\"" + notNormalColloc + "\"); showTriplets(\"" + notNormalColloc + "\"); openFrameTab()' style='background-color:" + v.normalObjectColorMap[normalColloc].bg + "; color: " + v.normalObjectColorMap[normalColloc].color + "'>" + notNormalColloc + "</span>";
                             res += newWord;
                             text = text.substring(index + notNormalColloc.length, text.length);
                             // Сохраняем количество пропусков цикла
                             skipWords = cnlArr.length - 1;
+                            v.selectedCNL.push(normalColloc);
+                            //увеличение частоты встречаемости объекта КЕЯ
+                            vue.incStat(normalColloc, 'meet');
                             throw "OK";
                         }
                     }
@@ -320,8 +340,6 @@ var app = new Vue({
             res += text;
 			res = res.replace(/\n/g, "<br/>");
 			v.colorizedRaw = res;
-
-            var vue = this;
 			//рендеринг события click
             new Vue({
                 render: Vue.compile('<div id="colorizedPlaceholder" class="colorized-text" >' + res + '</div>').render,
@@ -334,9 +352,34 @@ var app = new Vue({
                     },
                     openFrameTab(){
                         vue.openFrameTab();
+                    },
+                    getSelectedCNL(){
+                        return vue.$data.selectedCNL;
                     }
                 }
             }).$mount('#colorizedPlaceholder');
+		},
+		addToStat(collocation, key, val){
+		    var v = this.$data;
+		    if (v.CNLStats.hasOwnProperty(collocation)){
+                v.CNLStats[collocation][key] = val;
+		    } else {
+		        v.CNLStats[collocation] = {};
+		        v.CNLStats[collocation][key] = val;
+		    }
+		},
+		incStat(collocation, key){
+		    var v = this.$data;
+		    if (v.CNLStats.hasOwnProperty(collocation)){
+		        if ( v.CNLStats[collocation].hasOwnProperty(key)){
+		            v.CNLStats[collocation][key]++;
+		        } else {
+		            v.CNLStats[collocation][key] = 1;
+		        }
+		    } else {
+		        v.CNLStats[collocation] = {};
+		        v.CNLStats[collocation][key] = 1;
+		    }
 		},
 		colorizeText(){
 			var v = this.$data;
@@ -355,6 +398,7 @@ var app = new Vue({
 			var tabIcon = '<i class="el-icon-caret-right leftborder"></i>';
 			var lines = this.$data.cnl.split("\n");
 			var content = "";
+			var that = this;
 			lines.forEach(function(line){
 				var newLine = "";
 				var tabCount = (line.match(/\t/g)||[]).length;
@@ -367,15 +411,24 @@ var app = new Vue({
 					newLine = tabIcon;
 				}
 				var color = "black";
+				var bgcolor = "white";
 				var text = line.replace("\t", "").trim();
+				var iconSelected = '';
 				if (tabCount % 2 != 0){
 					if (text === "подкласс"){
 						color = "lightseagreen";
 					} else {
 						color = "red";
 					}
+				} else {
+				    var normText = that.$data.normalData[text];
+				    if (that.$data.normalObjectColorMap[normText] != undefined){
+				        color = that.$data.normalObjectColorMap[normText].color;
+				        bgcolor = that.$data.normalObjectColorMap[normText].bg;
+				        iconSelected = '<i v-bind:class="{\'invisible\' : !getSelectedCNL().includes(\'' + normText + '\') || getCurTab() != getTabCnl()}" class="el-icon-success" style="padding-right: 5px;"></i>';
+				    }
 				}
-				newLine += "<span class='triplet-unit' @click='addToTextHistory(\"" + text + "\"); showTriplets(\"" + text + "\")' style='color:" + color + "'>" + text;
+				newLine += "<span class='triplet-unit cnl-token' @click='addToTextHistory(\"" + text + "\"); handleClick(\"" + text + "\")' style='color:" + color + "; background-color:" + bgcolor + "'>" + iconSelected + text;
 				content += newLine + "</span><br/>";
 			});
 
@@ -386,12 +439,39 @@ var app = new Vue({
 			new Vue({
 				render: Vue.compile('<div id="cnlPlaceholder" class="cnl" >' + content + '</div>').render,
 				methods: {
-					showTriplets(text) {
-						v.showTriplets(text);
+					handleClick(text) {
+					    var normalText = v.$data.normalData[text];
+					    if (v.$data.curTab === "STATS"){
+					        v.$data.CNLSelectedOrigin = text;
+					        v.$data.CNLSelectedNorm = normalText;
+					        v.$data.CNLMeet = v.$data.CNLStats[normalText].meet;
+					        v.$data.CNLimportance = (v.$data.CNLMeet / v.$data.wordsCount).toFixed(5); ;
+					    } else
+					    if (v.$data.curTab === "CNL"){
+					        if (!v.$data.selectedCNL.includes(normalText)){
+					            v.$data.selectedCNL.push(normalText);
+					        } else {
+                                v.$data.selectedCNL.remove(normalText);
+					        }
+					    } else
+					    if (v.$data.curTab === "TRIPLETS"){
+						    v.showTriplets(text);
+						}
 					},
 					addToTextHistory(text){
-						v.addToTextHistory(text);
-					}
+                        if (v.$data.curTab === "TRIPLETS"){
+                            v.addToTextHistory(text);
+                        }
+					},
+                     getSelectedCNL(){
+                         return v.$data.selectedCNL;
+                     },
+                     getCurTab(){
+                         return v.$data.curTab;
+                     },
+                     getTabCnl(){
+                         return v.$data.TAB_CNL;
+                     }
 				}
 			}).$mount('#cnlPlaceholder');
 
@@ -429,10 +509,18 @@ var app = new Vue({
 			var res = {};
 			var color = 'green';
 			var that = this;
+			var nData = that.$data.normalData;
 			json.triplets.forEach(function(t){
 				var s = t.subjectorigin;
+                //заполнение объекта с нормализованными словами
+                if (!nData.hasOwnProperty(s)){
+                    nData[s] = t.subject;
+                }
+                if (!nData.hasOwnProperty(t.objectorigin)){
+                    nData[t.objectorigin] = t.object;
+                }
 				if (usedT.includes(s)) return;
-				//присвоеение цвета субъекту
+				//присвоение цвета субъекту
 				that.addObjectColor(t.subject, color);
 				usedT.push(s);
 				var f = json.triplets.filter(x => x.subjectorigin === s);
@@ -453,9 +541,9 @@ var app = new Vue({
 				normalObjects.forEach(function(o){
 					that.addObjectColor(o, color);
 				});
-
 				res[s] = {"relations":relations, "objects":objects};
 			});
+			this.$data.CNLCount = Object.keys(this.$data.normalObjectColorMap).length;
 			return res;
 		},
 		addObjectColor(obj, color){
@@ -464,6 +552,15 @@ var app = new Vue({
 			    var shade = this.generateShade();
 				v.normalObjectColorMap[obj] = {color: shade.color, bg: shade.bg};
 			}
+		},
+		selectAllCNL(){
+		    var that = this;
+		    Object.values(this.$data.normalData).forEach(function(val){
+		        that.$data.selectedCNL.push(val);
+		    });
+		},
+		deselectAllCNL(){
+		    this.$data.selectedCNL = [];
 		},
 		generateShade(){
             var v = this.$data;
