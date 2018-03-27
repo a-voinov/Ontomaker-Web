@@ -9,13 +9,13 @@
         <!-- Element UI-->
         <link rel="stylesheet" href="lib/element/index.css"/>
         <script charset="utf-8" src="lib/element/index.js"></script>
-        <script charset="utf-8" src="cnl-area.js"></script>
     </head>
     <style>
         [v-cloak] {
             display: none;
         }
     </style>
+    <div class="wrapper">
         <!-- app -->
         <div id="app"  v-cloak>
             <!--Главное меню-->
@@ -50,7 +50,9 @@
             class="sideMenu"
             :collapse=true
             :default-active="curMenuItem">
-                <el-menu-item  index="createNewCNL">
+                <el-menu-item
+                        index="createNewCNL"
+                        @click="showLoadOwlModal = true">
                     <i style="font-size:44; left:10px" class="el-icon-document"></i>
                     <span style="font-size:14" slot="title">Создать новую онтологию</span>
                 </el-menu-item>
@@ -68,10 +70,6 @@
                     <i style="font-size:44" class="el-icon-edit"></i>
                     <span style="font-size:14" slot="title">Режим редактирования КЕЯ</span>
                 </el-menu-item>
-                <!-- <el-menu-item style="margin-top:10px;"  index="download">
-                     <i style="font-size:44" class="el-icon-download"></i>
-                     <span style="font-size:14" slot="title">Скачать</span>
-                 </el-menu-item>-->
             </el-menu>
             <div id="parent">
                 <!--Основной контент-->
@@ -152,10 +150,10 @@
                     <div v-bind:class="{'invisible' : curTab != TAB_STATS }"
                          readonly id="satsArea"
                     >
-                        <p>Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
-                        <p>Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
-                        <p>Встречаемость объекта КЕЯ в тексте: <span class="statSpan">{{CNLMeet}}</span></p>
-                        <p>Частота объекта: <span class="statSpan">{{CNLimportance}}</span></p>
+                        <p class="stat-label">Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
+                        <p class="stat-label">Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
+                        <p class="stat-label">Встречаемость объекта КЕЯ в тексте: <span class="statSpan">{{CNLMeet}}</span></p>
+                        <p class="stat-label">Частота объекта: <span class="statSpan">{{CNLimportance}}</span></p>
                     </div>
                     <!-- OWL -->
                     <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
@@ -164,10 +162,10 @@
                               v-model="owl">
                     </textarea>
                 </div>
-                <div v-bind:class="{'invisible' : curTab != TAB_VOWL}"
-                     id="owlDiv">
-                    <iframe id="vowlFrame" width="100%" height="100%"> </iframe>
-                </div>
+            </div>
+            <div v-bind:class="{'invisible' : curTab != TAB_VOWL}"
+                 id="owlDiv">
+                <iframe id="vowlFrame" width="100%" height="100%"> </iframe>
             </div>
 
             <!--Сообшение о ошибке (незаполненная КЕЯ)-->
@@ -204,8 +202,16 @@
                 <p slot="footer"> </p>
             </modal>
        </div>
+        <div class="push"></div>
+    </div>
+    <div class="footer">
+        <hr style="background-color:#ffd04b"/>
+        <div style="text-align:center">
+             <span style="color:white; margin-top: 10px">Ontomaker v0.9 </span>
+        </div>
+    </div>
 
-    <script charset="utf-8" src="util.js"></script>
+       <script charset="utf-8" src="util.js"></script>
        <script charset="utf-8" src="main.js"></script>
        <script charset="utf-8" src="modal.js"></script>
 
@@ -215,6 +221,17 @@
        <link rel="stylesheet" href="modal.css"/>
        <link rel="stylesheet" href="frame.css"/>
        <link rel="stylesheet" href="scrollbar.css"/>
+
+        <script charset="utf-8" src="jquery.splitter.js"></script>
+        <link rel="stylesheet" href="jquery.splitter.css"/>
+
+        <script>
+                var splitter = $('#parent').height('75%').split({
+                    orientation: 'vertical',
+                    limit: 400,
+                    position: '50%'
+                });
+        </script>
 
    </body>
 </html>

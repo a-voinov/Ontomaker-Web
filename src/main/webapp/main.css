@@ -1,3 +1,7 @@
+body {
+    margin: 0;
+}
+
 textarea,
 pre {
 	-moz-tab-size: 4;
@@ -38,7 +42,7 @@ pre {
 #tripletsArea {
 	margin-top: 1%;
 	width: 90%;
-	height: 75%;
+	height: 97%;
 	resize: none;
 	margin-left: 2vw;
 	font-size:18
@@ -81,20 +85,30 @@ pre {
 }
 
 #owlDiv {
-	height: 80%;
+	height: 83%;
+    position: fixed;
+    width: 100%;
+    top: 13vh;
+    z-index: 1000;
 }
 
 .cnl,
 .colorized-text
  {
 	margin-top: 1%;
-	width: 90%;
-	height: 71%;
-	margin-left: 2vw;
+	height: 90%;
 	font-size:22;
 	border:solid 1px black;
 	padding: 10px;
 	overflow: auto;
+}
+
+.cnl{
+   	margin-left: 1vw;
+}
+
+.colorized-text{
+	height: 80%;
 }
 
 .triplet-unit {
@@ -114,16 +128,6 @@ pre {
 .topborder {
 	border-top: 1px solid black;
 	width: 210%;
-}
-
-#leftSide{
-	width:50%;
-	float:left
-}
-
-#rightSide{
-	width:50%;
-	float:right
 }
 
 .cnl-token {
@@ -146,4 +150,28 @@ pre {
 .btn-bot-panel{
     text-align: center;
     padding-top: 5px;
+}
+
+.stat-label {
+    margin-left:15;
+    font-size:20;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+.wrapper {
+  min-height: 100%;
+
+  /* Equal to height of footer */
+  /* But also accounting for potential margin-bottom of last child */
+  margin-bottom: -50px;
+}
+.footer,
+.push {
+  height: 50px;
+}
+.footer{
+    background-color:#545c64;
 }

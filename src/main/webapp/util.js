@@ -28,3 +28,4 @@ $.fn.selectRange = function(start, end) {
         }
     });
 };
+

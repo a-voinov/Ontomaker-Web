@@ -84,6 +84,7 @@ var app = new Vue({
 		triplets: '',
 		owlURL: '',
 		cnl_content: '',
+		textNormalContent: [],
 		//переменные расцветки КЕЯ
         baseColors: [ // базовые цвета (RGB)
             [45, 152, 45], //зеленый
@@ -131,7 +132,7 @@ var app = new Vue({
 			v.OWLErrMessage = res.replace("ERROR:", "");
 			v.showOWLErrorModal = true;
         },
-		//Ассинхронный запрос получения OWL
+		//Асинхронный запрос получения OWL
 		getOWL: function(){
 			$.ajax({
               type: "Post",
@@ -197,10 +198,22 @@ var app = new Vue({
 				v.showLoadOwlModal = true;
 			}
 		},
+		clearData(){
+		    var v = this.$data;
+            v.normalData = {};
+            v.normalObjectColorMap = {};
+            v.textHistory = [];
+            v.selectedCNL = [];
+            v.textNormalContent = [];
+            v.CNLStats = {};
+            v.colorizedRaw = '';
+		},
 		//Отправка КЕЯ на сервер
 		sendCNL: function(){
 			var v = this.$data;
 			var iri = v.iri;
+            this.clearData();
+			v.isVowlLoaded = false;
 			v.isOwlLoading = true;
 			v.showLoadingModal = true;
 			v.loadingWindowMessage = "Генерация OWL...";
@@ -326,6 +339,7 @@ var app = new Vue({
                             // Сохраняем количество пропусков цикла
                             skipWords = cnlArr.length - 1;
                             v.selectedCNL.push(normalColloc);
+                            v.textNormalContent.push(normalColloc);
                             //увеличение частоты встречаемости объекта КЕЯ
                             vue.incStat(normalColloc, 'meet');
                             throw "OK";
@@ -448,7 +462,7 @@ var app = new Vue({
 					        v.$data.CNLimportance = (v.$data.CNLMeet / v.$data.wordsCount).toFixed(5); ;
 					    } else
 					    if (v.$data.curTab === "CNL"){
-					        if (!v.$data.selectedCNL.includes(normalText)){
+					        if (!v.$data.selectedCNL.includes(normalText) && v.$data.textNormalContent.includes(normalText) ){
 					            v.$data.selectedCNL.push(normalText);
 					        } else {
                                 v.$data.selectedCNL.remove(normalText);
@@ -556,7 +570,9 @@ var app = new Vue({
 		selectAllCNL(){
 		    var that = this;
 		    Object.values(this.$data.normalData).forEach(function(val){
-		        that.$data.selectedCNL.push(val);
+		        if (that.$data.textNormalContent.includes(val)){
+		            that.$data.selectedCNL.push(val);
+		        }
 		    });
 		},
 		deselectAllCNL(){
