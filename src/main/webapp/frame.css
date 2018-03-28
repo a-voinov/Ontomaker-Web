@@ -17,7 +17,7 @@
 
 .frame-left {
 	width:50%;
-	height:80%;
+	height:100%;
 	float:left;
 	border-right: 1px solid;
 }
@@ -32,6 +32,7 @@
 	display: table;
 	top: 40%;
 	position: relative;
+	left: 20;
 }
 
 .object-link{

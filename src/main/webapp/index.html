@@ -3,12 +3,17 @@
     <head>
     <meta>
         <meta charset="UTF-8"/>
-
+        <!--vue-->
         <script src="lib/vue/vue.js"></script>
+        <!--jQuery-->
         <script src="lib/jquery/jquery-3.3.1.min.js"></script>
-        <!-- Element UI-->
+        <script charset="utf-8" src="lib/jquery/splitter/jquery.splitter.js"></script>
+        <link rel="stylesheet" href="lib/jquery/splitter/jquery.splitter.css"/>
+        <!--ElementUI-->
         <link rel="stylesheet" href="lib/element/index.css"/>
         <script charset="utf-8" src="lib/element/index.js"></script>
+        <!--Chart-->
+        <script charset="utf-8" src="lib/chart/chart.js"></script>
     </head>
     <style>
         [v-cloak] {
@@ -17,7 +22,7 @@
     </style>
     <div class="wrapper">
         <!-- app -->
-        <div id="app"  v-cloak>
+        <div v-cloak id="app">
             <!--Главное меню-->
             <el-menu
                     ref="menu"
@@ -82,7 +87,6 @@
                                    placeholder="Введите текст на КЕЯ"
                                    v-model="cnl"
                                    v-on:keydown="keaKeyDown" >
-                        <!--   @blur="updateCnlText(); cnlAreaShow = true;"-->
                        </textarea>
                    </div>
                    <!-- Визуализация КЕЯ -->
@@ -102,11 +106,11 @@
                     <!--Размеченный из КЕЯ тект-->
                     <div v-bind:class="{'invisible' : !colorizedAreaShow || curTab != TAB_CNL}"
                          id="colorizedTextArea">
-                        <div id="colorizedPlaceholder" class="colorized-text"></div>
                         <div class="btn-bot-panel">
-                            <el-button @click="selectAllCNL()" type="primary" icon="el-icon-success">Выделить все</el-button>
-                            <el-button @click="deselectAllCNL()" type="primary" icon="el-icon-error">Очистить все</el-button>
+                            <el-button @click="selectAllCNL()" class="transparent-btn" type="success" icon="el-icon-success"></el-button>
+                            <el-button @click="deselectAllCNL()" class="transparent-btn" type="info" icon="el-icon-error"></el-button>
                         </div>
+                        <div id="colorizedPlaceholder" class="colorized-text"></div>
                     </div>
                     <!-- Фрейм -->
                     <div v-bind:class="{'invisible' : curTab != TAB_TRIPLETS }"
@@ -116,19 +120,21 @@
                         <div v-bind:class="{'invisible' : showFrame || curTab != TAB_TRIPLETS}"
                                 class="frame-placeholder">
                               <i class="el-icon-arrow-left"></i>
-                              <p style="font-family: monospace;">Выберите субъект онтологии</p>
+                              <p style="font-family: monospace;">Выберите объект онтологии</p>
                         </div>
                         <div v-bind:class="{'invisible' : !showFrame || curTab != TAB_TRIPLETS}"
                             class="frame-main">
                             <div class="frame-header">
-                                <button id="backButton"
+                                <el-button type="primary" plain id="backButton"
+                                        class="transparent-btn"
                                         @click="showPrevFrame()"
                                         v-bind:class="{'invisible' : textHistory.length <= 1 || curTab != TAB_TRIPLETS}">
                                     <i class="el-icon-back" style="/* float: left; */margin-left:;"></i>
-                                </button>
+                                </el-button>
                                 <p>{{subjName}}</p>
                             </div>
-                            <div class="frame-body">
+                            <div class="frame-body"
+                                 v-bind:class="{'invisible' : relations.length === 0 && objects.length === 0 }">
                                 <div class="frame-left">
                                         <p v-for="item in relations"
                                             style="padding-bottom: 2px;"
@@ -148,12 +154,14 @@
                     </div>
                     <!-- Анализ статистики -->
                     <div v-bind:class="{'invisible' : curTab != TAB_STATS }"
-                         readonly id="satsArea"
-                    >
+                         readonly id="satsArea">
                         <p class="stat-label">Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
                         <p class="stat-label">Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
-                        <p class="stat-label">Встречаемость объекта КЕЯ в тексте: <span class="statSpan">{{CNLMeet}}</span></p>
-                        <p class="stat-label">Частота объекта: <span class="statSpan">{{CNLimportance}}</span></p>
+                        <p class="stat-label">Количество вхождений объекта в текст: <span class="statSpan">{{CNLMeet}}</span></p>
+                        <p class="stat-label">Частота объекта: <span class="statSpan">{{CNLimportance}} %</span></p>
+                        <p class="stat-label">Гистограмма частотности объектов:</p>
+                        <hr/>
+                        <canvas id="cnlTop" width="400" height="400"></canvas>
                     </div>
                     <!-- OWL -->
                     <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
@@ -207,7 +215,7 @@
     <div class="footer">
         <hr style="background-color:#ffd04b"/>
         <div style="text-align:center">
-             <span style="color:white; margin-top: 10px">Ontomaker v0.9 </span>
+             <span style="color:white; margin-top: 10px">Ontomaker</span>
         </div>
     </div>
 
@@ -222,15 +230,12 @@
        <link rel="stylesheet" href="frame.css"/>
        <link rel="stylesheet" href="scrollbar.css"/>
 
-        <script charset="utf-8" src="jquery.splitter.js"></script>
-        <link rel="stylesheet" href="jquery.splitter.css"/>
-
         <script>
-                var splitter = $('#parent').height('75%').split({
-                    orientation: 'vertical',
-                    limit: 400,
-                    position: '50%'
-                });
+            var splitter = $('#parent').height('440px').split({
+                orientation: 'vertical',
+                limit: 400,
+                position: '50%'
+            });
         </script>
 
    </body>

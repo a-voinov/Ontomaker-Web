@@ -372,6 +372,8 @@ var app = new Vue({
                     }
                 }
             }).$mount('#colorizedPlaceholder');
+            //отрисовка графика топ встречаемости объектов КЕЯ
+            this.drawTopCNL();
 		},
 		addToStat(collocation, key, val){
 		    var v = this.$data;
@@ -405,6 +407,58 @@ var app = new Vue({
 				v.colorizedRaw = '<i style="font-size:48px" class="el-icon-loading"></i>';
 				this.getNormalText();
 			}
+		},
+		//составление топа используемых объектов КЕЯ в тексте + отрисовка графика
+		drawTopCNL(){
+		    //пересоздать холст
+		    $('#cnlTop').remove(); // this is my <canvas> element
+            $('#satsArea').append('<canvas id="cnlTop" width="400" height="400"></canvas>');
+            //сортировка данных
+            var statsArr = [];
+            var v = this.$data;
+            var that = this;
+            Object.keys(app.$data.CNLStats).map(
+                function(key, index){
+                    var value = app.$data.CNLStats[key];
+                    var item = {};
+                    item["text"] = key;
+                    item["data"] = value;
+                    item["color"] = v.normalObjectColorMap[key].bg;
+                    statsArr.push(item);
+                }
+            );
+            var sorted = statsArr.sort(function(a, b){return b.data.meet - a.data.meet;});
+            //составление массивов данных для графика
+            var labelsArr = [];
+            var dataArr = [];
+            var colorsArr = [];
+            sorted.map(function(key, index){
+                labelsArr.push(key.text);
+                dataArr.push(that.calculateImportance(key.data.meet));
+                colorsArr.push(key.color);
+            });
+            //отрисовка графика
+            var ctx = document.getElementById("cnlTop").getContext('2d');
+            var topCnlChart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: labelsArr,
+                    datasets: [{
+                        label: '% вхождения',
+                        data: dataArr,
+                        backgroundColor: colorsArr
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    }
+                }
+            });
 		},
 		//рисование КЕЯ
 		updateCnlText () {
@@ -459,7 +513,7 @@ var app = new Vue({
 					        v.$data.CNLSelectedOrigin = text;
 					        v.$data.CNLSelectedNorm = normalText;
 					        v.$data.CNLMeet = v.$data.CNLStats[normalText].meet;
-					        v.$data.CNLimportance = (v.$data.CNLMeet / v.$data.wordsCount).toFixed(5); ;
+					        v.$data.CNLimportance = v.calculateImportance(v.$data.CNLMeet)  ;
 					    } else
 					    if (v.$data.curTab === "CNL"){
 					        if (!v.$data.selectedCNL.includes(normalText) && v.$data.textNormalContent.includes(normalText) ){
@@ -490,6 +544,9 @@ var app = new Vue({
 			}).$mount('#cnlPlaceholder');
 
 		},
+		calculateImportance(a){
+		    return ((a / this.$data.wordsCount) * 100).toFixed(5);
+		},
 		addToTextHistory(text){
 			var h = this.$data.textHistory;
 			if (h[h.length - 1] != text)
@@ -509,12 +566,17 @@ var app = new Vue({
 				v.objects = [];
 				v.relations = [];
 			}
+			this.scrollFrameTop();
 		},
 		showPrevFrame(){
 			var h = this.$data.textHistory;
 			h.pop();
 			text = h[h.length - 1];
 			this.showTriplets(text);
+			this.scrollFrameTop();
+		},
+		scrollFrameTop(){
+		    $('.frame-main').scrollTop(0);
 		},
 		parseTriplets(triplets){
 			var json = JSON.parse(triplets);

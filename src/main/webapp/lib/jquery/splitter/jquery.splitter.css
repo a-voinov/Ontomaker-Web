@@ -10,12 +10,9 @@
 .splitter_panel .vsplitter {
     background-color: grey;
     cursor: col-resize;
-    z-index:900;
-    width: 4px;
-
-         top: 6px !important;
-         height: 95% !important;
-         background-color: grey;
+        z-index:900;
+        width: 4px;
+        background-color: grey;
 }
 
 .splitter_panel .hsplitter {

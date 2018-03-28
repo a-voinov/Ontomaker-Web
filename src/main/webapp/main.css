@@ -24,7 +24,6 @@ pre {
 #owlArea {
 	width: 90%;
 	height: 100%;
-	margin-left: 2vw;
 	resize: none;
 }
 
@@ -40,11 +39,9 @@ pre {
 #owlArea,
 #rawArea,
 #tripletsArea {
-	margin-top: 1%;
-	width: 90%;
-	height: 97%;
+	width: 100%;
+	height: 100%;
 	resize: none;
-	margin-left: 2vw;
 	font-size:18
 }
 
@@ -95,8 +92,7 @@ pre {
 .cnl,
 .colorized-text
  {
-	margin-top: 1%;
-	height: 90%;
+	height: 95%;
 	font-size:22;
 	border:solid 1px black;
 	padding: 10px;
@@ -105,10 +101,6 @@ pre {
 
 .cnl{
    	margin-left: 1vw;
-}
-
-.colorized-text{
-	height: 80%;
 }
 
 .triplet-unit {
@@ -148,8 +140,17 @@ pre {
 }
 
 .btn-bot-panel{
-    text-align: center;
-    padding-top: 5px;
+    padding-top: 10px;
+    position: absolute;
+    right: 20;
+}
+
+.transparent-btn{
+    opacity: 0.6;
+}
+
+.transparent-btn:hover {
+    opacity: 1;
 }
 
 .stat-label {
@@ -160,17 +161,18 @@ pre {
 html, body {
   height: 100%;
   margin: 0;
+  overflow-y: hidden;
 }
 .wrapper {
   min-height: 100%;
 
   /* Equal to height of footer */
   /* But also accounting for potential margin-bottom of last child */
-  margin-bottom: -50px;
+  margin-bottom: -60px;
 }
 .footer,
 .push {
-  height: 50px;
+  height: 60px;
 }
 .footer{
     background-color:#545c64;
