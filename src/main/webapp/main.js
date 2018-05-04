@@ -19,6 +19,7 @@ var app = new Vue({
 		vowlLink: 'http://localhost:8070/webvowl_1.0.6/',
 		appLink: 'http://localhost:8888/',
 		normalizeLink: 'https://rucnlparser.herokuapp.com/normtable/',
+		statsLink:'http://rucnlparser.herokuapp.com/getstatistic/',
 		//индексы вкладок
 		TAB_CNL: 'CNL',
 		TAB_TRIPLETS: 'TRIPLETS',
@@ -33,6 +34,8 @@ var app = new Vue({
 		showLoadOwlModal: false,
 		showEmptyCnlModal: false,
 		showOWLErrorModal: false,
+		//флаг вывода статистики
+		showTopWordsScreen: false,
 		//OWL уже загружен
 		isOwlLoaded: false,
 		//OWL в процессе загрузки
@@ -69,6 +72,7 @@ var app = new Vue({
 		selectedCNL: [],
 		//данные статистики КЕЯ
 		CNLStats: {},
+		topWords: [],
 		CNLCount: 0,
 		wordsCount:0,
 		CNLMeet: 0,
@@ -256,6 +260,47 @@ var app = new Vue({
 			this.colorizeText();
 			v.colorizedAreaShow = true;
 		},
+		//получение статистики с сервиса (частота встречаемости слова в тексте без минус слов)
+		getServiceStats(){
+		    var v = this.$data;
+		    var that = this;
+		    $.ajax({
+              type: "Post",
+              url: v.statsLink,
+              data: {
+                text: v.raw
+              },
+              success: function(res){
+                var json = JSON.parse(res);
+                console.log('stats data received');
+                that.sortTopWords(json);
+                console.log(json);
+              },
+              dataType: 'text'
+            });
+		},
+		sortTopWords(json){
+		    var v = this.$data;
+        	var that = this;
+        	topWords = json.statistic;
+		    topWords.sort(function(a, b){
+                var keyA = a.count,
+                    keyB = b.count;
+                // Compare
+                if(keyA < keyB) return 1;
+                if(keyA > keyB) return -1;
+                return 0;
+            });
+		},
+		showTopWords(){
+		    var v = this.$data;
+		    v.showTopWordsScreen = true;
+		    this.drawTopWords();
+		},
+		showTopObjects(){
+		    var v = this.$data;
+        	v.showTopWordsScreen = false;
+		},
 		getNormalText(){
 			var v = this.$data;
 			var that = this;
@@ -406,13 +451,53 @@ var app = new Vue({
 			} else {
 				v.colorizedRaw = '<i style="font-size:48px" class="el-icon-loading"></i>';
 				this.getNormalText();
+				this.getServiceStats();
 			}
 		},
+        //отрисовка графика топа слов в тексте
+        drawTopWords(){
+            //пересоздать холст
+            $('#cnlTopWords').remove(); // this is my <canvas> element
+            var canvasHeight = 100 +  Object.keys(topWords).length * 18;
+            $('#topWords').append('<canvas id="cnlTopWords" width="400" height="' + canvasHeight + '"></canvas>');
+            //составление массивов данных для графика
+            var labelsArr = [];
+            var dataArr = [];
+            var colorsArr = [];
+            topWords.map(function(key, index){
+                labelsArr.push(key.word);
+                dataArr.push(key.count);
+                colorsArr.push('blue');
+            });
+            //отрисовка графика
+            var ctx = document.getElementById("cnlTopWords").getContext('2d');
+            var topCnlChart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: labelsArr,
+                    datasets: [{
+                        label: 'количество слов',
+                        data: dataArr,
+                        backgroundColor: colorsArr
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    }
+                }
+            });
+        },
 		//составление топа используемых объектов КЕЯ в тексте + отрисовка графика
 		drawTopCNL(){
 		    //пересоздать холст
 		    $('#cnlTop').remove(); // this is my <canvas> element
-            $('#satsArea').append('<canvas id="cnlTop" width="400" height="400"></canvas>');
+		    var canvasHeight = 100 +  Object.keys(app.$data.CNLStats).length * 18;
+            $('#topObjects').append('<canvas id="cnlTop" width="400" height="' + canvasHeight + '"></canvas>');
             //сортировка данных
             var statsArr = [];
             var v = this.$data;

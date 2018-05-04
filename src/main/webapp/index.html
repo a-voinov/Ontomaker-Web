@@ -45,7 +45,7 @@
                     OWL
                 </el-menu-item>
                 <el-menu-item class="topMenu" index="VOWL">
-                    Граф (V-OWL)
+                    Онтограф
                 </el-menu-item>
             </el-menu>
             <br/>
@@ -155,13 +155,32 @@
                     <!-- Анализ статистики -->
                     <div v-bind:class="{'invisible' : curTab != TAB_STATS }"
                          readonly id="satsArea">
-                        <p class="stat-label">Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
-                        <p class="stat-label">Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
-                        <p class="stat-label">Количество вхождений объекта в текст: <span class="statSpan">{{CNLMeet}}</span></p>
-                        <p class="stat-label">Частота объекта: <span class="statSpan">{{CNLimportance}} %</span></p>
-                        <p class="stat-label">Гистограмма частотности объектов:</p>
-                        <hr/>
-                        <canvas id="cnlTop" width="400" height="400"></canvas>
+                        <el-button type="primary" plain id="topWordsBtn"
+                                   @click="showTopWords()"
+                                   style="margin-left: 10px;"
+                                   v-bind:class="{'invisible' : curTab != TAB_STATS || showTopWordsScreen}">
+                            Топ частоты слов
+                        </el-button>
+                        <el-button type="primary" plain id="topObjectsBtn"
+                                   @click="showTopObjects()"
+                                   v-bind:class="{'invisible' : curTab != TAB_STATS || !showTopWordsScreen}">
+                            Топ частоты объектов КЕЯ
+                        </el-button>
+                        <div id="topWords"
+                             v-bind:class="{'invisible' : !showTopWordsScreen}">
+                            <canvas id="cnlTopWords" width="400" height="400"></canvas>
+                        </div>
+                        <div id="topObjects"
+                             v-bind:class="{'invisible' : showTopWordsScreen}">
+
+                            <p class="stat-label">Исходная форма: <span style="color:green">{{CNLSelectedOrigin}}</span></p>
+                            <p class="stat-label">Нормальная форма: <span style="color:red">{{CNLSelectedNorm}}</span></p>
+                            <p class="stat-label">Количество вхождений объекта в текст: <span class="statSpan">{{CNLMeet}}</span></p>
+                            <p class="stat-label">Частота объекта: <span class="statSpan">{{CNLimportance}} %</span></p>
+                            <p class="stat-label">Гистограмма частотности объектов:</p>
+                            <hr/>
+                            <canvas id="cnlTop" width="400" height="400"></canvas>
+                        </div>
                     </div>
                     <!-- OWL -->
                     <textarea v-bind:class="{'invisible' : curTab != TAB_OWL}"
